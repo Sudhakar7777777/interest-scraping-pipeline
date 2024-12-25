@@ -1,13 +1,13 @@
-# FCNR Interest Rate Scraping Pipeline
+# Interest Rate Scraping Pipeline
 
-This project contains the pipeline for scraping FCNR interest rate data.
+This project contains the pipeline for scraping Interest rate data.
 
 ## Folder Structure
 ```
-fcnr_interest_rate_scraping_pipeline/
+interest_rate_scraping_pipeline/
 ├── airflow/
 │   ├── dags/
-│   │   └── fcnr_interest_rate_scraping.py      # Airflow DAG to scrape FCNR interest rates
+│   │   └── interest_rate_scraping.py          # Airflow DAG to scrape interest rates
 │   ├── requirements.txt                       # Airflow and dependencies (including prometheus-flask-exporter)
 │   ├── Dockerfile                             # Dockerfile for the Airflow service
 │   └── .env                                   # Airflow environment variables (optional)
@@ -49,7 +49,7 @@ fcnr_interest_rate_scraping_pipeline/
   - **`.env`**: Environment variables for Airflow.
 
 - **`scraper/`**: Contains the actual web scraping logic.
-  - **`scraper.py`**: Main script for scraping FCNR data.
+  - **`scraper.py`**: Main script for scraping Interest data.
   - **`utils.py`**: Utility functions used by the scraper.
   - **`Dockerfile`**: Docker configuration for running the scraper.
   - **`requirements.txt`**: Python dependencies for the scraper.

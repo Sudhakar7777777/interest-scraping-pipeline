@@ -1,8 +1,8 @@
-# FCNR Interest Rates Scraping Pipeline with SQLite Storage
+# Interest Rates Scraping Pipeline with SQLite Storage
 
 ## Overview
 
-This solution provides an optimized pipeline for scraping FCNR (Foreign Currency Non-Resident) Interest Rates from a website, storing the data in **SQLite**, and orchestrating the pipeline using **Apache Airflow**. The pipeline also integrates **ELK** (Elasticsearch, Logstash, Kibana) for logging, **Prometheus** for monitoring, and is containerized with **Docker Compose**. 
+This solution provides an optimized pipeline for scraping Interest Rates from a website, storing the data in **SQLite**, and orchestrating the pipeline using **Apache Airflow**. The pipeline also integrates **ELK** (Elasticsearch, Logstash, Kibana) for logging, **Prometheus** for monitoring, and is containerized with **Docker Compose**. 
 
 The following components are included:
 - **Apache Airflow** for scheduling and orchestrating tasks.
@@ -18,7 +18,7 @@ The following components are included:
 ### 1. **Airflow Pipeline Setup**
 Airflow will orchestrate the entire process of scraping, data cleaning, and storing in the SQLite database.
 
-- **Scraping Task**: Scrape the FCNR Interest Rates data from the website.
+- **Scraping Task**: Scrape the Interest Rates data from the website.
 - **Data Cleaning Task**: Process the raw data (format tenure, clean interest rates).
 - **Store Data Task**: Store the cleaned data into an SQLite database.
   
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS interest_rates (
 ## Conclusion
 This solution provides an end-to-end pipeline that:
 
-- Scrapes FCNR Interest Rates from a website.
+- Scrapes Interest Rates from a website.
 - Processes and stores the data into an SQLite database.
 - Orchestrates the entire process using Apache Airflow.
 - Monitors the pipeline using Prometheus and Grafana.
