@@ -1,0 +1,4 @@
+pyppeteer==1.0.2
+requests==2.28.1
+sqlite3==3.35.5  # If you're using an older version of Python, you may need this.
+pytest==7.2.2

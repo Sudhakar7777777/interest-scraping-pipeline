@@ -1,0 +1,112 @@
+version: '3'
+services:
+  # Airflow webserver
+  airflow-webserver:
+    image: apache/airflow:2.7.0
+    container_name: airflow-webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/usr/local/airflow/dags
+      - ./db:/app/db  # Mount SQLite db directory
+      - ./airflow/requirements.txt:/tmp/requirements.txt
+    depends_on:
+      - airflow-scheduler
+
+  # Airflow scheduler
+  airflow-scheduler:
+    image: apache/airflow:2.7.0
+    container_name: airflow-scheduler
+    command: ["scheduler"]
+    volumes:
+      - ./airflow/dags:/usr/local/airflow/dags
+      - ./db:/app/db  # Mount SQLite db directory
+      - ./airflow/requirements.txt:/tmp/requirements.txt
+    depends_on:
+      - airflow-webserver
+
+  # Airflow worker
+  airflow-worker:
+    image: apache/airflow:2.7.0
+    container_name: airflow-worker
+    command: ["worker"]
+    volumes:
+      - ./airflow/dags:/usr/local/airflow/dags
+      - ./db:/app/db  # Mount SQLite db directory
+      - ./airflow/requirements.txt:/tmp/requirements.txt
+    depends_on:
+      - airflow-scheduler
+
+  # Scraper service
+  scraper:
+    build: ./scraper
+    container_name: scraper
+    environment:
+      - AIRFLOW_URL=http://airflow-webserver:8080
+    volumes:
+      - ./db:/app/db  # Mount SQLite db directory
+    depends_on:
+      - airflow-webserver
+      - airflow-scheduler
+
+  # ELK Stack for Logging (optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.0
+    container_name: logstash
+    environment:
+      - LOGSTASH_INPUT_HTTP_HOST=0.0.0.0
+    ports:
+      - "5044:5044"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
+      - ./prometheus/alertmanager.yml:/etc/prometheus/alertmanager.yml
+    depends_on:
+      - airflow-webserver
+      - scraper
+
+  # Alertmanager for alerting
+  alertmanager:
+    image: prom/alertmanager:v0.22.2
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    depends_on:
+      - prometheus
+
+  # Grafana for metrics visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  db_data:

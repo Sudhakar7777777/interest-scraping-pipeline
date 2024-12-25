@@ -1,0 +1,16 @@
+groups:
+  - name: example_alerts
+    rules:
+      - alert: ScraperFailed
+        expr: rate(scraper_runtime_seconds[5m]) == 0
+        for: 5m
+        annotations:
+          description: "The scraper has not been running for the past 5 minutes!"
+          summary: "Scraper has failed to run"
+
+      - alert: AirflowTaskFailure
+        expr: increase(airflow_task_failures_total[5m]) > 0
+        for: 5m
+        annotations:
+          description: "One or more tasks in Airflow have failed!"
+          summary: "Airflow task failure detected"

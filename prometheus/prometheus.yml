@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s # How often Prometheus scrapes metrics
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape Airflow webserver metrics
+  - job_name: "airflow-webserver"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["airflow-webserver:8080"]
+
+  # Scrape Scraper service metrics
+  - job_name: "scraper"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["scraper:5000"] # assuming scraper exposes metrics on port 5000
+
+  # Scrape Prometheus itself
+  - job_name: "prometheus"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # Optional: Scrape Grafana metrics
+  - job_name: "grafana"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["grafana:3000"]

@@ -1,0 +1,44 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r scraper/requirements.txt
+          pip install -r airflow/requirements.txt
+
+      - name: Run Tests
+        run: |
+          pytest tests/test_scraper.py
+          pytest tests/test_airflow.py
+          pytest tests/test_metrics.py
+          pytest tests/test_config.py
+
+      - name: Build Docker Containers
+        run: docker-compose build
+
+      - name: Run Docker Containers
+        run: docker-compose up -d
+
+      - name: Stop Docker Containers
+        run: docker-compose down
