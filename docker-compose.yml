@@ -1,55 +1,87 @@
-version: '3'
 services:
-  # Airflow webserver
+  scraper-app:
+    build: ./scraper-service
+    container_name: scraper-app
+    ports:
+      - "8000:8000"
+    # environment:
+      # - PLAYWRIGHT_BROWSERS_PATH=/usr/local/share/.playwright  # Playwright browser executable path
+    # volumes:
+    #   - .:/app
+    networks:
+      - airflow-network
+    # restart: always    --- Needed for production like scenario
+
+  # Airflow Web Server
   airflow-webserver:
-    image: apache/airflow:2.7.0
+    build: airflow
     container_name: airflow-webserver
+    command: ["airflow", "webserver"]
     environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://airflow:airflow@airflow-db:3306/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=sHCiCmJcwqf1hC6PBuSEu9zInwsLVytixiK1a6_9-Dw=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=my-secret-key
     ports:
       - "8080:8080"
-    volumes:
-      - ./airflow/dags:/usr/local/airflow/dags
-      - ./db:/app/db  # Mount SQLite db directory
-      - ./airflow/requirements.txt:/tmp/requirements.txt
+    # volumes:
+      # - ./airflow/dags:/opt/airflow/dags
+      # - ./scraper:/opt/airflow/scraper  # Mount scraper module here
+      # - ./airflow/requirements.txt:/tmp/requirements.txt
+    networks:
+      - airflow-network
     depends_on:
-      - airflow-scheduler
+      - airflow-db
+      - scraper-app
 
-  # Airflow scheduler
+  # Airflow Scheduler
   airflow-scheduler:
-    image: apache/airflow:2.7.0
+    build: airflow
     container_name: airflow-scheduler
-    command: ["scheduler"]
-    volumes:
-      - ./airflow/dags:/usr/local/airflow/dags
-      - ./db:/app/db  # Mount SQLite db directory
-      - ./airflow/requirements.txt:/tmp/requirements.txt
-    depends_on:
-      - airflow-webserver
-
-  # Airflow worker
-  airflow-worker:
-    image: apache/airflow:2.7.0
-    container_name: airflow-worker
-    command: ["worker"]
-    volumes:
-      - ./airflow/dags:/usr/local/airflow/dags
-      - ./db:/app/db  # Mount SQLite db directory
-      - ./airflow/requirements.txt:/tmp/requirements.txt
-    depends_on:
-      - airflow-scheduler
-
-  # Scraper service
-  scraper:
-    build: ./scraper
-    container_name: scraper
+    command: ["airflow", "scheduler"]
     environment:
-      - AIRFLOW_URL=http://airflow-webserver:8080
-    volumes:
-      - ./db:/app/db  # Mount SQLite db directory
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://airflow:airflow@airflow-db:3306/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=sHCiCmJcwqf1hC6PBuSEu9zInwsLVytixiK1a6_9-Dw=
+    # volumes:
+      # - ./airflow/dags:/opt/airflow/dags
+      # - ./scraper:/opt/airflow/scraper  # Mount scraper module here
+      # - ./airflow/requirements.txt:/tmp/requirements.txt
     depends_on:
       - airflow-webserver
-      - airflow-scheduler
+      - airflow-db
+    networks:
+      - airflow-network
+
+  # MySQL Database (Airflow metadata database)
+  airflow-db:
+    image: mysql:8.0
+    container_name: airflow-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: airflow
+      MYSQL_PASSWORD: airflow
+      MYSQL_DATABASE: airflow
+    volumes:
+      - airflow-db-data:/var/lib/mysql
+    networks:
+      - airflow-network
+
+  # # Scraper service
+  # scraper:
+  #   build: ./scraper
+  #   container_name: scraper
+  #   environment:
+  #     - AIRFLOW_URL=http://airflow-webserver:8080
+  #   volumes:
+  #     - ./db:/app/db
+  #   depends_on:
+  #     - airflow-webserver
+  #   networks:
+  #     - airflow-network
+
+  
 
   # ELK Stack for Logging (optional)
   elasticsearch:
@@ -59,6 +91,10 @@ services:
       - discovery.type=single-node
     ports:
       - "9200:9200"
+    depends_on:
+      - airflow-webserver
+    networks:
+      - airflow-network
 
   logstash:
     image: docker.elastic.co/logstash/logstash:7.10.0
@@ -67,12 +103,20 @@ services:
       - LOGSTASH_INPUT_HTTP_HOST=0.0.0.0
     ports:
       - "5044:5044"
+    depends_on:
+      - airflow-webserver
+    networks:
+      - airflow-network
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.10.0
     container_name: kibana
     ports:
       - "5601:5601"
+    depends_on:
+      - airflow-webserver
+    networks:
+      - airflow-network
 
   # Prometheus for monitoring
   prometheus:
@@ -82,31 +126,14 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
-      - ./prometheus/alertmanager.yml:/etc/prometheus/alertmanager.yml
     depends_on:
       - airflow-webserver
-      - scraper
+    networks:
+      - airflow-network
 
-  # Alertmanager for alerting
-  alertmanager:
-    image: prom/alertmanager:v0.22.2
-    container_name: alertmanager
-    ports:
-      - "9093:9093"
-    volumes:
-      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    depends_on:
-      - prometheus
-
-  # Grafana for metrics visualization (optional)
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
+networks:
+  airflow-network:
+    driver: bridge
 
 volumes:
-  db_data:
+  airflow-db-data:

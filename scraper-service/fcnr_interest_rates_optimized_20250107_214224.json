@@ -1,0 +1,22 @@
+[
+    {
+        "Tenure": "Years >= 1 < 2",
+        "USD Interest Rate": "6.00"
+    },
+    {
+        "Tenure": "Years >= 2 < 3",
+        "USD Interest Rate": "4.49"
+    },
+    {
+        "Tenure": "Years >= 3 < 4",
+        "USD Interest Rate": "3.71"
+    },
+    {
+        "Tenure": "Years >= 4 < 5",
+        "USD Interest Rate": "3.46"
+    },
+    {
+        "Tenure": "Years = 5",
+        "USD Interest Rate": "3.46"
+    }
+]

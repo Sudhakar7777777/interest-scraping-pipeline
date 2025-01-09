@@ -1,8 +1,8 @@
 import logging
-import requests
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from scraper import scrape_interest_rates_optimized
 from utils import store_data_in_sqlite
 from airflow.exceptions import AirflowException
 import os
@@ -10,24 +10,13 @@ import os
 # Set logging configuration
 logging.basicConfig(level=logging.DEBUG)
 
-# URL of the scraper service
-SCRAPER_SERVICE_URL = "http://scraper-app:8000/scrape/kvb"  # Use the Docker container name as the hostname
-
 def scrape_interest_rates_task(**kwargs):
-    """Task to scrape the interest rates from the new service"""
+    """Task to scrape the interest rates"""
     try:
         logging.debug("Starting the scrape task")
-        
-        # Make an HTTP request to the scraper service
-        response = requests.get(SCRAPER_SERVICE_URL)
-        
-        # Check if the request was successful
-        if response.status_code == 200:
-            data = response.json()  # Parse the JSON response
-            logging.debug(f"Scraped data: {data}")
-            return data
-        else:
-            raise AirflowException(f"Failed to scrape data. HTTP Status: {response.status_code}")
+        data = scrape_interest_rates_optimized()
+        logging.debug(f"Scraped data: {data}")
+        return data
     except Exception as e:
         logging.error(f"Error scraping interest rates: {e}")
         raise AirflowException(f"Scrape failed: {str(e)}")
@@ -62,7 +51,7 @@ scrape_task = PythonOperator(
     task_id='scrape_interest_rates',
     python_callable=scrape_interest_rates_task,
     provide_context=True,
-    resources={'cpus': 1, 'ram': 1024},  # Resource constraints (optional)
+    resources={'cpus': 1, 'memory': 1024},  # Resource constraints (optional)
     dag=dag,
 )
 
@@ -71,7 +60,7 @@ store_task = PythonOperator(
     task_id='store_data_in_sqlite',
     python_callable=store_data_task,
     provide_context=True,
-    resources={'cpus': 1, 'ram': 1024},  # Resource constraints (optional)
+    resources={'cpus': 1, 'memory': 1024},  # Resource constraints (optional)
     dag=dag,
 )
 

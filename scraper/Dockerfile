@@ -16,5 +16,8 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Copy the scraper code
 COPY . /app
 
+# Expose the necessary port (if the scraper exposes a port)
+EXPOSE 8081
+
 # Set the default command to run the scraper
-CMD ["python", "scraper.py"]
+CMD ["python", "-m", "scraper"]

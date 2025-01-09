@@ -4,6 +4,8 @@ import time
 from pyppeteer import launch
 from datetime import datetime
 import logging
+import time
+
 
 # Set logging configuration
 logging.basicConfig(level=logging.DEBUG)
@@ -42,3 +44,9 @@ async def scrape_interest_rates_optimized():
     logging.debug(f"Scraped data: {table_data} in {end_time - start_time:.2f} seconds")
     
     return table_data
+
+# Keep the script running forever
+while True:
+    # Your scraping task here
+    print("Running the scraper...")
+    time.sleep(60)  # Sleep for a minute and then scrape again
