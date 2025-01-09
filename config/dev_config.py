@@ -1,2 +1,2 @@
-DATABASE_PATH = "db/dev_db.sqlite3"
+DATABASE_PATH = "db/airflow.db"
 DEBUG = True

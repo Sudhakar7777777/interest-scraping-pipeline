@@ -17,6 +17,7 @@ docker-compose up --build
 ### Access Services:
 
 -    Airflow Web UI: http://localhost:8080
+-    Scraper API UI: http://localhost:8000/docs
 -    Prometheus: http://localhost:9090
 -    Grafana: http://localhost:3000
 -    Default credentials: ```admin / admin```

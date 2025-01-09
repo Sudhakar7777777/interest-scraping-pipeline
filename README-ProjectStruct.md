@@ -13,9 +13,9 @@ interest_rate_scraping_pipeline/
 │   └── .env                                   # Airflow environment variables (optional)
 ├── db/
 │   └── db.sqlite3                             # SQLite DB to store scraped data (mounted volume)
-├── scraper/
+├── scraper-service/
 │   ├── Dockerfile                             # Dockerfile for scraper service
-│   ├── scraper.py                             # Scraping logic (with Prometheus metrics exposure)
+│   ├── main.py                                # FASTAPI Scraping service
 │   ├── requirements.txt                       # Scraper dependencies, including prometheus_client
 │   ├── logs/                                  # Logs directory (optional, for scraper logs)
 │   └── .env                                   # Scraper environment variables (optional)

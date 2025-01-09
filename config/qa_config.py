@@ -1,2 +1,2 @@
-DATABASE_PATH = "db/qa_db.sqlite3"
+DATABASE_PATH = "db/qa_airflow.db"
 DEBUG = False
